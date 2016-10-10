@@ -8,6 +8,8 @@
   ******************************************************************************
   * @attention
   * @par Revision history
+  *	   <2016/07/11> Code modified based on latest WIZ750SR firmware (v1.0.0stable)
+  *    <2016/05/09> Serial to MQTT version v0.0.1 Develop by Eric Jung
   *    <2016/03/29> v1.0.0 Develop by Eric Jung
   *    <2016/03/02> v0.8.0 Develop by Eric Jung
   *    <2015/11/24> v0.0.1 Develop by Eric Jung
@@ -25,6 +27,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdio.h>
+#include <stdlib.h>
 #include "common.h"
 #include "W7500x_board.h"
 
@@ -47,6 +50,12 @@
 #include "deviceHandler.h"
 #include "flashHandler.h"
 #include "gpioHandler.h"
+
+#include <string.h>
+#include "mqttHandler.h"
+#include "MQTTClient.h"
+#include "thingplus.h"
+#include "cJSON.h"
 
 // ## for debugging
 //#include "loopback.h"
@@ -80,6 +89,146 @@ static __IO uint32_t TimingDelay;
 uint8_t g_send_buf[DATA_BUF_SIZE];
 uint8_t g_recv_buf[DATA_BUF_SIZE];
 
+// Thingplus: Connection info
+//////////////////////////////////////////////////////////////////
+uint8_t mac[6] = {0x00, 0x08, 0xdc, 0x1d, 0x6a, 0x4a};                // MAC ADDRESS
+uint8_t *apikey = "1US1XTfzyozLteRAcJjWKCofpq8=";                     // APIKEY
+uint8_t *ledId         = "led-0008dc1d6a4a-0";                        // LED ID
+uint8_t *temperatureId = "temperature-0008dc1d6a4a-0";                // TEMPERATURE ID
+uint8_t *percentId     = "percent-0008dc1d6a4a-0";                    // PERCENT ID (Humidity)
+uint8_t *lightId       = "light-0008dc1d6a4a-0";                      // LIGHT ID
+uint8_t *stringId      = "0008dc1d6a4a-undefined-string-undefined";   // STRING ID (device name)
+uint8_t *numberId      = "0008dc1d6a4a-undefined-number-undefined";   // NUMBER ID (device uptime)
+//////////////////////////////////////////////////////////////////
+
+// Thingplus: time variables - Report interval
+//////////////////////////////////////////////////////////////////
+time_t current = 0;
+time_t nextReportInterval = 0;
+time_t reportIntervalSec = (DEFAULT_REPORT_INTERVAL / 1000);
+//////////////////////////////////////////////////////////////////
+
+// Thingplus: Sensors
+//////////////////////////////////////////////////////////////////
+float temp_val = 0, humi_val = 0;
+uint16_t light_val = 0;
+
+void SensorsUpdate(void)
+{
+	// Developer TODO: Add the code to get sensor values.
+	temp_val = (rand() % 5) + 21;
+	humi_val = (rand() % 10) + 60;
+	light_val = (rand() % 20) + 1000;
+}
+//////////////////////////////////////////////////////////////////
+
+// Thingplus: Actuator callback
+//////////////////////////////////////////////////////////////////
+enum CMDTYPE {
+	CMDTYPE_ON,
+	CMDTYPE_OFF,
+	CMDTYPE_BLINK
+};
+
+static enum CMDTYPE req_cmd = CMDTYPE_OFF;
+static uint32_t req_interval;
+static uint32_t req_duration;
+
+void setLEDHandler(enum CMDTYPE cmd, uint32_t interval, uint32_t duration)
+{
+	if(cmd == CMDTYPE_ON)
+	{
+		req_cmd = CMDTYPE_ON;
+		if(duration) req_duration = duration + millis();
+		LED_On(LED1);
+	}
+	else if(cmd == CMDTYPE_OFF)
+	{
+		req_cmd = CMDTYPE_OFF;
+		LED_Off(LED1);
+	}
+	else if(cmd == CMDTYPE_BLINK)
+	{
+		req_cmd = CMDTYPE_BLINK;
+		if(interval) req_interval = interval;
+		if(duration) req_duration = duration + millis();
+	}
+}
+
+void LEDHandler(void)
+{
+	static uint32_t prev;
+	uint32_t current = millis();
+	
+	if(req_cmd != CMDTYPE_OFF)
+	{
+		if((req_duration != 0) && (current > req_duration))
+		{
+			req_duration = 0;
+			req_interval = 0;
+			req_cmd = CMDTYPE_OFF;
+			LED_Off(LED1);
+		}
+		
+		if(req_cmd == CMDTYPE_BLINK)
+		{
+			if(current > (req_interval + prev))
+			{
+				LED_Toggle(LED1);
+				prev = current; // update
+			}
+		}
+	}
+}
+
+uint8_t *actuatingCallback(const uint8_t* id, const uint8_t* cmd, cJSON *options)
+{
+	uint32_t actuatorCmdInterval = 0;
+	uint32_t actuatorCmdDuration = 0;
+	
+	if (NULL != options &&
+		NULL != cJSON_GetObjectItem(options,"interval") &&
+		cJSON_Number == cJSON_GetObjectItem(options,"interval")->type) 
+	{
+		actuatorCmdInterval = cJSON_GetObjectItem(options,"interval")->valueint;
+	}
+	
+	if (NULL != options && 
+		NULL != cJSON_GetObjectItem(options,"duration") &&
+		cJSON_Number == cJSON_GetObjectItem(options,"duration")->type) 
+	{
+		actuatorCmdDuration = cJSON_GetObjectItem(options,"duration")->valueint;
+	}
+	
+	// Actuator: LED
+	if(strcmp((char *)id, (char *)ledId) == 0)
+	{
+		if(strcmp((char *)cmd, "on") == 0)
+		{
+			setLEDHandler(CMDTYPE_ON, 0, actuatorCmdDuration);
+			return (uint8_t *)"success";
+		}
+		else if(strcmp((char *)cmd, "off") == 0)
+		{
+			setLEDHandler(CMDTYPE_OFF, 0, 0);
+			return (uint8_t *)"success";
+		}
+		else if(strcmp((char *)cmd, "blink") == 0)
+		{
+			setLEDHandler(CMDTYPE_BLINK, actuatorCmdInterval, actuatorCmdDuration);
+			return (uint8_t *)"success";
+		}
+		else
+		{
+			return NULL;
+		}
+	}
+	
+	return NULL;
+}
+//////////////////////////////////////////////////////////////////
+
+
 /**
   * @brief  Main program
   * @param  None
@@ -110,6 +259,7 @@ int main(void)
 	load_DevConfig_from_storage();
 	
 	/* Set the MAC address to WIZCHIP */
+	set_mac(mac);
 	Mac_Conf();
 	
 	/* UART Initialization */
@@ -173,10 +323,18 @@ int main(void)
 		display_Dev_Info_dns();
 	}
 	
+	
+	//////////////////////////////////////////////////////////////////
+	/* ThingPlus Initialization */
+	thingplus_begin(mac, apikey);
+	thingplus_actuatorCallbackSet(actuatingCallback);
+	thingplus_connect();
+	//////////////////////////////////////////////////////////////////
+	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	// W7500x Application: Main Routine
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-	
+
 	flag_s2e_application_running = ON;
 	
 	// HW_TRIG switch ON
@@ -192,6 +350,44 @@ int main(void)
 		do_seg(SOCK_DATA);
 		
 		if(dev_config->options.dhcp_use) DHCP_run(); // DHCP client handler for IP renewal
+		
+		//////////////////////////////////////////////////////////////////
+		// ThingPlus Client Services 
+		//////////////////////////////////////////////////////////////////
+		thingplus_loop();
+		LEDHandler(); // Actuator handling example: LED control
+		
+		/*
+		 * Report status and sensor values periodically (per report interval, default: 60sec)
+		 */
+		current = getNow();
+		if(current >= nextReportInterval)
+		{
+			SensorsUpdate();
+			
+			// Gateway status
+			thingplus_gatewayStatusPublish(TRUE, (reportIntervalSec * 3));
+			
+			// Sensors / Actuators status
+			thingplus_sensorStatusPublish(temperatureId, TRUE, (reportIntervalSec * 3));
+			thingplus_sensorStatusPublish(percentId, TRUE, (reportIntervalSec * 3));
+			thingplus_sensorStatusPublish(lightId, TRUE, (reportIntervalSec * 3));
+			thingplus_sensorStatusPublish(stringId, TRUE, (reportIntervalSec * 3));
+			thingplus_sensorStatusPublish(numberId, TRUE, (reportIntervalSec * 3));
+			thingplus_sensorStatusPublish(ledId, TRUE, (reportIntervalSec * 3));
+			
+			// Sensing values
+			thingplus_valuePublish_float(temperatureId, temp_val);
+			thingplus_valuePublish_int(percentId, humi_val);
+			thingplus_valuePublish_int(lightId, light_val);
+			thingplus_valuePublish_str(stringId, DEVICE_ID_DEFAULT); // Device Name
+			thingplus_valuePublish_int(numberId, (millis()/60000));  // Device Uptime(Min)
+			
+			// Report interval update
+			nextReportInterval = current + reportIntervalSec;
+		}
+		
+		//////////////////////////////////////////////////////////////////
 		
 		// ## debugging: Data echoback
 		//loopback_tcps(6, g_recv_buf, 5001);

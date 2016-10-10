@@ -490,9 +490,9 @@ void check_phylink_status(void)
 	if(prev_link_status != link_status)
 	{
 		if(link_status == 0x00)
-			set_connection_status_io(STATUS_PHYLINK_PIN, ON); 	// PHY Link up
+			;//set_connection_status_io(STATUS_PHYLINK_PIN, ON); 	// PHY Link up
 		else
-			set_connection_status_io(STATUS_PHYLINK_PIN, OFF); 	// PHY Link down
+			;//set_connection_status_io(STATUS_PHYLINK_PIN, OFF); 	// PHY Link down
 		
 		prev_link_status = link_status;
 	}

@@ -11,8 +11,9 @@
 #define MINOR_VER			0
 #define MAINTENANCE_VER		0
 
+#define STR_VERSION_STATUS	"MQTT" // or "Stable"
 //#define STR_VERSION_STATUS	"Develop" // or "Stable"
-#define STR_VERSION_STATUS	"Stable"
+//#define STR_VERSION_STATUS	"Stable"
 
 ////////////////////////////////
 // W7500x HW Socket Definition//
@@ -31,6 +32,8 @@
 #define SOCK_DHCP			3
 #define SOCK_DNS			4
 #define SOCK_FWUPDATE		4
+
+#define SOCK_MQTT			5
 
 ////////////////////////////////
 // In/External Clock Setting  //

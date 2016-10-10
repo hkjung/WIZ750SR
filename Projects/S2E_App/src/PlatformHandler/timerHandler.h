@@ -6,6 +6,13 @@
 void Timer_Configuration(void);
 void Timer_IRQ_Handler(void);
 
+////////////////////////////////////////
+uint32_t getNow(void);
+uint32_t getDevtime(void);
+void setDevtime(uint32_t timeval_sec);
+uint32_t millis(void);
+////////////////////////////////////////
+
 uint32_t getDeviceUptime_hour(void);
 uint8_t  getDeviceUptime_min(void);
 uint8_t  getDeviceUptime_sec(void);

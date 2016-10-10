@@ -11,9 +11,9 @@
 #define SEG_DATA_UART		0	// S2E Data UART selector, [0] UART0 or [1] UART1
 #define SEG_DEBUG_UART		2	// S2E Debug UART, fixed
 
-//#define SEG_DATA_BUF_SIZE	2048	// UART Ring buffer size
+#define SEG_DATA_BUF_SIZE	2048	// UART Ring buffer size
 //#define SEG_DATA_BUF_SIZE	3072	// UART Ring buffer size
-#define SEG_DATA_BUF_SIZE	4096	// UART Ring buffer size
+//#define SEG_DATA_BUF_SIZE	4096	// UART Ring buffer size
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 #define DEFAULT_MODESWITCH_INTER_GAP	500 // 500ms (0.5sec)
@@ -40,11 +40,17 @@ extern uint8_t flag_process_dhcp_success;
 extern uint8_t flag_process_dns_success;
 extern char * str_working[];
 
-
 typedef enum{SEG_UART_RX, SEG_UART_TX, SEG_ETHER_RX, SEG_ETHER_TX, SEG_ALL} teDATADIR;
+
+// Shared variables for MQTT client reconnection time control
+extern uint8_t enable_reconnection_timer;
+extern volatile uint16_t reconnection_time;
 
 // Serial to Ethernet function handler; call by main loop
 void do_seg(uint8_t sock);
+
+// TCP client port number management
+uint16_t get_tcp_any_port(void);
 
 // Timer for S2E core operations
 void seg_timer_sec(void);

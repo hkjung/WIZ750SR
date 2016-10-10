@@ -40,8 +40,8 @@ uint8_t * tbSEGCPCMD[] = {"MC", "VR", "MN", "IM", "OP", "DD", "CP", "PO", "DG", 
 							"LG", "ER", "FW", "MA", "PW", "SV", "EX", "RT", "UN", "ST",
 							"FR", "EC", "K!", "UE", "GA", "GB", "GC", "GD", "CA", "CB", 
 							"CC", "CD", "SC", "S0", "S1", "RX", "FS", "FC", "FP", "FD",
-							"FH", "UI", 0};
-
+							"FH", 0};
+                            
 uint8_t * tbSEGCPERR[] = {"ERNULL", "ERNOTAVAIL", "ERNOPARAM", "ERIGNORED", "ERNOCOMMAND", "ERINVALIDPARAM", "ERNOPRIVILEGE"};
 
 uint8_t gSEGCPPRIVILEGE = SEGCP_PRIVILEGE_CLR;
@@ -338,7 +338,11 @@ uint16_t proc_SEGCP(uint8_t* segcp_req, uint8_t* segcp_rep)
 						if(strcmp(STR_VERSION_STATUS, "Develop") == 0)
 						{
 							// Develop version 
-							sprintf(trep,"%d.%d.%ddev", dev_config->fw_ver[0], dev_config->fw_ver[1], dev_config->fw_ver[2]);
+							sprintf(trep,"%d.%d.%d%s", dev_config->fw_ver[0], dev_config->fw_ver[1], dev_config->fw_ver[2], "dev");
+						}
+						else if(strcmp(STR_VERSION_STATUS, "MQTT") == 0)
+						{
+							sprintf(trep,"%d.%d.%d%s", dev_config->fw_ver[0], dev_config->fw_ver[1], dev_config->fw_ver[2], "mq");
 						}
 						else
 						{
@@ -664,17 +668,17 @@ uint16_t proc_SEGCP(uint8_t* segcp_req, uint8_t* segcp_rep)
 						else dev_config->network_info[0].keepalive_en = tmp_byte;
 						break;
 					case SEGCP_KI:
-						sscanf(param,"%ld", &tmp_long);
+						sscanf((char *)param, "%ld", &tmp_long);
 						if(tmp_long > 0xFFFF) ret |= SEGCP_RET_ERR_INVALIDPARAM;
 						else dev_config->network_info[0].keepalive_wait_time = (uint16_t) tmp_long;
 						break;
 					case SEGCP_KE:
-						sscanf(param,"%ld", &tmp_long);
+						sscanf((char *)param,"%ld", &tmp_long);
 						if(tmp_long > 0xFFFF) ret |= SEGCP_RET_ERR_INVALIDPARAM;
 						else dev_config->network_info[0].keepalive_retry_time = (uint16_t) tmp_long;
 						break;
 					case SEGCP_RI:
-						sscanf(param,"%ld", &tmp_long);
+						sscanf((char *)param,"%ld", &tmp_long);
 						if(tmp_long > 0xFFFF) ret |= SEGCP_RET_ERR_INVALIDPARAM;
 						else dev_config->network_info[0].reconnection = (uint16_t) tmp_long;
 						break;
@@ -777,17 +781,17 @@ uint16_t proc_SEGCP(uint8_t* segcp_req, uint8_t* segcp_rep)
 							}
 							else
 							{
-								sscanf(param, "%s", &dev_config->module_name);
+								sscanf((char *)param, "%s", &dev_config->module_name);
 							}
 						}
 						break;
 					case SEGCP_LP:
-						sscanf(param,"%ld", &tmp_long);
+						sscanf((char *)param,"%ld", &tmp_long);
 						if(tmp_long > 0xFFFF) ret |= SEGCP_RET_ERR_INVALIDPARAM;
 						else dev_config->network_info[0].local_port = (uint16_t)tmp_long;
 						break;
 					case SEGCP_RP:
-						sscanf(param,"%ld", &tmp_long);
+						sscanf((char *)param,"%ld", &tmp_long);
 						if(tmp_long > 0xFFFF) ret |= SEGCP_RET_ERR_INVALIDPARAM;                  
 						else dev_config->network_info[0].remote_port = (uint16_t)tmp_long;
 						break;
@@ -1068,7 +1072,6 @@ uint16_t proc_SEGCP(uint8_t* segcp_req, uint8_t* segcp_rep)
 						break;
 
 					case SEGCP_UN:
-					case SEGCP_UI:
 					case SEGCP_ST:
 					case SEGCP_LG:
 					case SEGCP_ER: 

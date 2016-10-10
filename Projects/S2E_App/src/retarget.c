@@ -21,8 +21,6 @@
 
 #include <stdio.h>
 #include "W7500x_uart.h"
-//#include "common.h"
-//#include "uart_cb.h" // << UART selector
 
 
 // Replaced the defines for UART Selector to Callback functions.

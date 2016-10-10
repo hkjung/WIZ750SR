@@ -361,7 +361,7 @@
               <MiscControls></MiscControls>
               <Define>CORTEX_M0 USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS\Device\WIZnet\W7500\Include;..\..\Libraries\W7500x_stdPeriph_Driver\inc;..\..\Libraries\CMSIS\Include;..\..\Libraries\CMSIS\Device\WIZnet\W7500\Source\ARM;.\src;..\..\ioLibrary\Ethernet;..\..\ioLibrary\Internet\DHCP;..\..\ioLibrary\Internet\DNS;..\..\ioLibrary\MDIO;..\..\ioLibrary\Application\loopback;.\src\Configuration;.\src\PlatformHandler;.\src\Serial_to_Ethernet;.\src\Callback</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS\Device\WIZnet\W7500\Include;..\..\Libraries\W7500x_stdPeriph_Driver\inc;..\..\Libraries\CMSIS\Include;..\..\Libraries\CMSIS\Device\WIZnet\W7500\Source\ARM;.\src;..\..\ioLibrary\Ethernet;..\..\ioLibrary\Internet\DHCP;..\..\ioLibrary\Internet\DNS;..\..\ioLibrary\MDIO;..\..\ioLibrary\Application\loopback;.\src\Configuration;.\src\PlatformHandler;.\src\Serial_to_Ethernet;.\src\Callback;.\src\MQTTPacket\src;.\src\Thingplus;.\src\cJSON</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -554,6 +554,21 @@
               <FileType>1</FileType>
               <FilePath>.\src\W7500x_board.c</FilePath>
             </File>
+            <File>
+              <FileName>mqttHandler.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\mqttHandler.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTClient.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\MQTTClient.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTClient.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\MQTTClient.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -628,6 +643,116 @@
               <FileName>i2cHandler.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\PlatformHandler\i2cHandler.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>MQTT_Paho</GroupName>
+          <Files>
+            <File>
+              <FileName>MQTTConnect.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\MQTTPacket\src\MQTTConnect.h</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTConnectClient.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\MQTTPacket\src\MQTTConnectClient.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTConnectServer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\MQTTPacket\src\MQTTConnectServer.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTDeserializePublish.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\MQTTPacket\src\MQTTDeserializePublish.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTFormat.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\MQTTPacket\src\MQTTFormat.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTFormat.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\MQTTPacket\src\MQTTFormat.h</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTPacket.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\MQTTPacket\src\MQTTPacket.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTPacket.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\MQTTPacket\src\MQTTPacket.h</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTPublish.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\MQTTPacket\src\MQTTPublish.h</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTSerializePublish.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\MQTTPacket\src\MQTTSerializePublish.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTSubscribe.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\MQTTPacket\src\MQTTSubscribe.h</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTSubscribeClient.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\MQTTPacket\src\MQTTSubscribeClient.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTSubscribeServer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\MQTTPacket\src\MQTTSubscribeServer.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTUnsubscribe.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\MQTTPacket\src\MQTTUnsubscribe.h</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTUnsubscribeClient.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\MQTTPacket\src\MQTTUnsubscribeClient.c</FilePath>
+            </File>
+            <File>
+              <FileName>MQTTUnsubscribeServer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\MQTTPacket\src\MQTTUnsubscribeServer.c</FilePath>
+            </File>
+            <File>
+              <FileName>StackTrace.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\src\MQTTPacket\src\StackTrace.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Thingplus</GroupName>
+          <Files>
+            <File>
+              <FileName>thingplus.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\Thingplus\thingplus.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>cJSON</GroupName>
+          <Files>
+            <File>
+              <FileName>cJSON.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\cJSON\cJSON.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -10,6 +10,9 @@
 #include "uartHandler.h"
 #include "gpioHandler.h"
 
+// MQTT interface functions
+#include "mqttHandler.h"
+
 /* Private define ------------------------------------------------------------*/
 // Ring Buffer
 BUFFER_DECLARATION(data_rx);
